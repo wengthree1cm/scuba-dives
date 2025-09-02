@@ -1,19 +1,25 @@
 import os
-from sqlmodel import SQLModel, Session, create_engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-DB_USER = os.getenv("POSTGRES_USER", "dive")
-DB_PASS = os.getenv("POSTGRES_PASSWORD", "divepass")
-DB_NAME = os.getenv("POSTGRES_DB", "dive_db")
-DB_HOST = os.getenv("POSTGRES_HOST", "db")
-DB_PORT = os.getenv("POSTGRES_PORT", "5432")
+DATABASE_URL = os.getenv("DATABASE_URL")  # 允许你未来切换 Postgres
 
-DATABASE_URL = f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-engine = create_engine(DATABASE_URL, echo=True)
+if not DATABASE_URL:
+    # 固定到 backend/app 同级，避免 --reload 产生相对路径不一致
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DB_FILE = os.path.join(BASE_DIR, "scuba.sqlite")
+    DATABASE_URL = f"sqlite:///{DB_FILE}"
 
-def get_session():
-    with Session(engine) as session:
-        yield session
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
-def init_db():
-    from .models import Item
-    SQLModel.metadata.create_all(engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

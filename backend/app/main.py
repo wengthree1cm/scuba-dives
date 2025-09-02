@@ -1,15 +1,25 @@
 from fastapi import FastAPI
-from .db import init_db
-from .routers import items
+from fastapi.middleware.cors import CORSMiddleware
+from .db import Base, engine
+from .routers import dive_logs
 
-app = FastAPI(title="FastAPI + PostgreSQL minimal")
+app = FastAPI(title="Scuba Diving Log API")
 
-@app.on_event("startup")
-def on_startup():
-    init_db()
+# 本地前端调试更方便
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+# 启动时自动建表
+Base.metadata.create_all(bind=engine)
 
-app.include_router(items.router)
+# 路由
+app.include_router(dive_logs.router)
+
+@app.get("/")
+def root():
+    return {"ok": True, "service": "scuba-api"}
