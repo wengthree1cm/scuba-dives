@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Dive Log · 潜水日志</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- 海面渐变 + 波浪 -->
+  <header class="ocean-header">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">🫧</div>
+      <h1>Dive Log</h1>
+      <p>记录每一次下潜 · Keep every dive memorable</p>
+    </div>
+    <svg class="wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,64L48,58.7C96,53,192,43,288,58.7C384,75,480,117,576,122.7C672,128,768,96,864,90.7C960,85,1056,107,1152,112C1248,117,1344,107,1392,101.3L1440,96L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
+    </svg>
+  </header>
+
+  <main class="container">
+    <!-- 表单卡片 -->
+    <section class="card">
+      <h2>新增潜水记录</h2>
+      <form id="create-form" class="grid">
+        <label class="field">
+          <span>日期与时间</span>
+          <input type="datetime-local" name="dive_time" required />
+        </label>
+
+        <label class="field">
+          <span>潜水编号（第几次）</span>
+          <input type="number" name="dive_number" min="1" step="1" required />
+        </label>
+
+        <label class="field">
+          <span>国家</span>
+          <select name="country" required>
+            <option value="" disabled selected>选择国家</option>
+            <option>United States</option>
+            <option>Mexico</option>
+            <option>Bahamas</option>
+            <option>Indonesia</option>
+            <option>Malaysia</option>
+            <option>Philippines</option>
+            <option>Thailand</option>
+            <option>Vietnam</option>
+            <option>Japan</option>
+            <option>Australia</option>
+            <option>Fiji</option>
+            <option>French Polynesia</option>
+            <option>Maldives</option>
+            <option>Sri Lanka</option>
+            <option>Egypt</option>
+            <option>South Africa</option>
+            <option>United Arab Emirates</option>
+            <option>Italy</option>
+            <option>Spain</option>
+            <option>Greece</option>
+            <option>Turkey</option>
+            <option>Other</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>地点（城市/海域）</span>
+          <input type="text" name="location" placeholder="e.g., Bali / Red Sea / Key Largo" required />
+        </label>
+
+        <label class="field">
+          <span>潜点名称（Site）</span>
+          <input type="text" name="site_name" placeholder="e.g., Manta Point" required />
+        </label>
+
+        <label class="field">
+          <span>潜伴（Buddy）</span>
+          <input type="text" name="buddy" placeholder="可留空" />
+        </label>
+
+        <label class="field">
+          <span>最大深度（米）</span>
+          <input type="number" name="max_depth_m" step="0.1" min="0" required />
+        </label>
+
+        <label class="field">
+          <span>水下时间（分钟）</span>
+          <input type="number" name="bottom_time_min" step="1" min="0" required />
+        </label>
+
+        <label class="field">
+          <span>起始压力（bar/psi）</span>
+          <input type="number" name="air_start" step="1" min="0" placeholder="可留空" />
+        </label>
+
+        <label class="field">
+          <span>结束压力（bar/psi）</span>
+          <input type="number" name="air_end" step="1" min="0" placeholder="可留空" />
+        </label>
+
+        <label class="field field-notes">
+          <span>备注</span>
+          <textarea name="notes" rows="3" placeholder="可记录能见度、生物、流、天气等"></textarea>
+        </label>
+
+        <div class="actions">
+          <button type="submit" class="btn primary">保存记录</button>
+          <button type="reset" class="btn">重置</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 列表卡片 -->
+    <section class="card">
+      <h2>我的潜水记录</h2>
+
+      <div class="toolbar">
+        <input id="search-input" class="search" type="search" placeholder="搜索：国家 / 地点 / 潜点 / Buddy" />
+        <button id="refresh-btn" class="btn">刷新</button>
+      </div>
+
+      <div id="list" class="log-list" aria-live="polite"></div>
+      <div id="empty" class="empty hidden">还没有记录。保存你的第一条潜水吧！</div>
+    </section>
+  </main>
+
+  <!-- 轻提示 -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

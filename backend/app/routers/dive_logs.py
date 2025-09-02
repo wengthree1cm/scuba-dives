@@ -6,111 +6,90 @@ from datetime import datetime
 from ..db import get_db
 from ..models import DiveLog
 
+# 如果你原来用的是 "/dives"，这里把 prefix 改成 "/dives" 即可，其他不变
 router = APIRouter(prefix="/dive-logs", tags=["dive-logs"])
 
-# ---------- Schemas ----------
+# ------------ Pydantic 模型（放在同一文件里，不新增 schemas.py） ------------
 class DiveLogCreate(BaseModel):
-    user_id: Optional[int] = Field(default=None, ge=1)
-    dive_number: Optional[int] = None
-    dive_time: datetime
+    dive_time: datetime = Field(..., description="潜水时间，例如 2025-09-02T15:11:51Z")
+    dive_number: int = Field(..., ge=1, description="你的第几次潜水")
+    country: str = Field(..., min_length=1, max_length=100, description="国家名称（前端可用下拉）")
+    location: str = Field(..., min_length=1, max_length=255, description="地理区域/城市/海域")
+    site_name: str = Field(..., min_length=1, max_length=255, description="潜点名（自由输入）")
+    buddy: Optional[str] = Field(None, max_length=255, description="潜伴/签名")
 
-    surface_interval_min: Optional[int] = None
-    site_name: str
-    country: Optional[str] = None
-    region: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    max_depth_m: float = Field(..., ge=0, description="最大深度（米）")
+    bottom_time_min: int = Field(..., ge=0, description="水下时间（分钟）")
 
-    environment: Optional[str] = None
-    entry_method: Optional[str] = None
-    exit_method: Optional[str] = None
-    current: Optional[str] = None
-    waves: Optional[str] = None
-    visibility_m: Optional[float] = None
-    water_temp_c: Optional[float] = None
-    air_temp_c: Optional[float] = None
-    weather: Optional[str] = None
-    altitude_m: Optional[int] = None
+    air_start: Optional[int] = Field(None, ge=0, description="气瓶起始压力（bar/psi）")
+    air_end: Optional[int] = Field(None, ge=0, description="气瓶结束压力（bar/psi）")
 
-    max_depth_m: Optional[float] = None
-    avg_depth_m: Optional[float] = None
-    bottom_time_min: Optional[int] = None
-    total_time_min: Optional[int] = None
-    safety_stop: Optional[bool] = True
-    deco_stop: Optional[bool] = False
-    deco_details: Optional[str] = None
-
-    gas: Optional[str] = None
-    o2_pct: Optional[float] = None
-    he_pct: Optional[float] = None
-    tank_type: Optional[str] = None
-    tank_size_l: Optional[float] = None
-    start_pressure_bar: Optional[float] = None
-    end_pressure_bar: Optional[float] = None
-    sac_l_min: Optional[float] = None
-
-    weight_kg: Optional[float] = None
-    suit_type: Optional[str] = None
-    suit_thickness_mm: Optional[float] = None
-    fins: Optional[str] = None
-    bcd: Optional[str] = None
-    reg: Optional[str] = None
-    computer: Optional[str] = None
-
-    buddy: Optional[str] = None
-    operator: Optional[str] = None
-    instructor: Optional[str] = None
-    certification_level: Optional[str] = None
-
-    rating_1to5: Optional[int] = Field(default=None, ge=1, le=5)
-    highlights: Optional[str] = None
     notes: Optional[str] = None
 
-class DiveLogOut(DiveLogCreate):
-    id: int
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
-    class Config:
-        from_attributes = True
+class DiveLogUpdate(BaseModel):
+    dive_time: Optional[datetime] = None
+    dive_number: Optional[int] = Field(None, ge=1)
+    country: Optional[str] = Field(None, min_length=1, max_length=100)
+    location: Optional[str] = Field(None, min_length=1, max_length=255)
+    site_name: Optional[str] = Field(None, min_length=1, max_length=255)
+    buddy: Optional[str] = Field(None, max_length=255)
 
-# ---------- Routes ----------
-@router.post("", response_model=DiveLogOut)
+    max_depth_m: Optional[float] = Field(None, ge=0)
+    bottom_time_min: Optional[int] = Field(None, ge=0)
+
+    air_start: Optional[int] = Field(None, ge=0)
+    air_end: Optional[int] = Field(None, ge=0)
+
+    notes: Optional[str] = None
+
+class DiveLogOut(BaseModel):
+    id: int
+    dive_time: datetime
+    dive_number: int
+    country: str
+    location: str
+    site_name: str
+    buddy: Optional[str] = None
+    max_depth_m: float
+    bottom_time_min: int
+    air_start: Optional[int] = None
+    air_end: Optional[int] = None
+    notes: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True  # Pydantic v2；若 v1 用 orm_mode = True
+
+# --------------------- Endpoints ---------------------
+@router.get("", response_model=List[DiveLogOut])
+def list_logs(
+    db: Session = Depends(get_db),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+):
+    q = db.query(DiveLog).order_by(DiveLog.dive_time.desc(), DiveLog.id.desc())
+    return q.offset(skip).limit(limit).all()
+
+@router.post("", response_model=DiveLogOut, status_code=201)
 def create_log(payload: DiveLogCreate, db: Session = Depends(get_db)):
-    obj = DiveLog(**payload.model_dump())
+    obj = DiveLog(
+        dive_time=payload.dive_time,
+        dive_number=payload.dive_number,
+        country=payload.country.strip(),
+        location=payload.location.strip(),
+        site_name=payload.site_name.strip(),
+        buddy=(payload.buddy.strip() if payload.buddy else None),
+        max_depth_m=float(payload.max_depth_m),
+        bottom_time_min=int(payload.bottom_time_min),
+        air_start=payload.air_start,
+        air_end=payload.air_end,
+        notes=(payload.notes.strip() if payload.notes else None),
+    )
     db.add(obj)
     db.commit()
     db.refresh(obj)
     return obj
-
-@router.get("", response_model=List[DiveLogOut])
-def list_logs(
-    db: Session = Depends(get_db),
-    user_id: Optional[int] = None,
-    site: Optional[str] = Query(default=None, alias="site_name"),
-    limit: int = 100,
-    offset: int = 0,
-    order: str = Query(default="-dive_time")
-):
-    q = db.query(DiveLog)
-    if user_id:
-        q = q.filter(DiveLog.user_id == user_id)
-    if site:
-        q = q.filter(DiveLog.site_name.ilike(f"%{site}%"))
-
-    # 简单排序
-    if order.startswith("-"):
-        key = order[1:]
-        if key == "dive_time":
-            q = q.order_by(DiveLog.dive_time.desc())
-        else:
-            q = q.order_by(getattr(DiveLog, key).desc())
-    else:
-        if order == "dive_time":
-            q = q.order_by(DiveLog.dive_time.asc())
-        else:
-            q = q.order_by(getattr(DiveLog, order).asc())
-
-    return q.offset(offset).limit(limit).all()
 
 @router.get("/{log_id}", response_model=DiveLogOut)
 def get_log(log_id: int, db: Session = Depends(get_db)):
@@ -120,12 +99,20 @@ def get_log(log_id: int, db: Session = Depends(get_db)):
     return obj
 
 @router.put("/{log_id}", response_model=DiveLogOut)
-def update_log(log_id: int, payload: DiveLogCreate, db: Session = Depends(get_db)):
+def update_log(log_id: int, payload: DiveLogUpdate, db: Session = Depends(get_db)):
     obj = db.query(DiveLog).get(log_id)
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
-    for k, v in payload.model_dump(exclude_unset=True).items():
+
+    data = payload.model_dump(exclude_unset=True)
+    # 去掉两端空格
+    for key in ("country", "location", "site_name", "buddy", "notes"):
+        if key in data and isinstance(data[key], str):
+            data[key] = data[key].strip()
+
+    for k, v in data.items():
         setattr(obj, k, v)
+
     db.commit()
     db.refresh(obj)
     return obj
