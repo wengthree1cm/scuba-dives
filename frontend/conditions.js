@@ -45,7 +45,10 @@ q.addEventListener("input", () => {
 
   typingTimer = setTimeout(async () => {
     try {
-      const url = `${API_BASE}/geocode?q=${encodeURIComponent(text)}`;
+      // ✅ 统一大小写并强制英文检索
+      const qText = (q.value || "").trim().toLowerCase();
+      const url = `${API_BASE}/geocode?q=${encodeURIComponent(qText)}&language=en`;
+
       const r = await fetch(url);
       if (!r.ok) { sugg.style.display = "none"; return; }
       const data = await r.json();

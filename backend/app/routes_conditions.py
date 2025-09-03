@@ -12,7 +12,7 @@ OPEN_METEO_MARINE = "https://marine-api.open-meteo.com/v1/marine"
 
 @router.get("/geocode")
 async def geocode(q: str = Query(..., min_length=1), count: int = 5, language: str = "zh", format: str = "json"):
-    params = {"name": q, "count": count, "language": language, "format": format}
+    params = {"name": q, "count": count, "language": "en", "format": format}
     async with httpx.AsyncClient(timeout=15) as client:
         r = await client.get(OPEN_METEO_GEO, params=params)
     r.raise_for_status()
