@@ -45,8 +45,8 @@ q.addEventListener("input", () => {
 
   typingTimer = setTimeout(async () => {
     try {
-      // ✅ 统一大小写并强制英文检索
-      const qText = (q.value || "").trim().toLowerCase();
+      // 统一大小写 + 强制英文检索
+      const qText = text.toLowerCase();
       const url = `${API_BASE}/geocode?q=${encodeURIComponent(qText)}&language=en`;
 
       const r = await fetch(url);
@@ -55,7 +55,8 @@ q.addEventListener("input", () => {
 
       // 渲染建议列表
       sugg.innerHTML = "";
-      (data.results || []).forEach(item => {
+      const items = (data.results || []);
+      items.forEach(item => {
         const div = document.createElement("div");
         const label = [item.name, item.admin1, item.country].filter(Boolean).join(" · ");
         div.textContent = label;
@@ -67,9 +68,10 @@ q.addEventListener("input", () => {
         });
         sugg.appendChild(div);
       });
-      sugg.style.display = (data.results && data.results.length) ? "block" : "none";
-      // 确保层级足够（避免被别的卡片遮挡）
-      sugg.style.zIndex = 10;
+
+      // 有结果就显示，没有就隐藏
+      sugg.style.display = items.length ? "block" : "none";
+      sugg.style.zIndex = 10000; // 兜底再提一层
     } catch (e) {
       console.error("geocode error:", e);
       sugg.style.display = "none";
