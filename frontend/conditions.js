@@ -2,7 +2,7 @@
 const API_BASE = "https://scuba-dives.onrender.com/api";
 
 // ---- 保护区 GeoJSON 路径（前端同源，不会 CORS）----
-const MPA_GEOJSON_URL = "/data/map.geojson";
+const MPA_GEOJSON_URL = "/data/mpa.geojson";
 
 // ---- DOM ----
 const q = document.getElementById("q");
