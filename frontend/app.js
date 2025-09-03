@@ -1,5 +1,5 @@
-const API_PREFIX = '/dive-logs';
-
+const API_BASE = "http://127.0.0.1:8000";
+const API_PREFIX = `${API_BASE}/dive-logs`;
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
