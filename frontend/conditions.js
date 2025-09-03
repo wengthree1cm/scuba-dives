@@ -1,6 +1,5 @@
 // ---- API 地址（可被 config.js 覆盖）----
-const API_BASE = (window && window.API_BASE) ? window.API_BASE : "/api";
-
+const API_BASE = "https://scuba-dives.onrender.com/api";
 // ---- DOM ----
 const q = document.getElementById("q");
 const sugg = document.getElementById("suggest");
