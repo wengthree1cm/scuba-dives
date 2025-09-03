@@ -1,5 +1,9 @@
 // ---- API 地址（可被 config.js 覆盖）----
 const API_BASE = "https://scuba-dives.onrender.com/api";
+
+// ---- 保护区 GeoJSON 路径（前端同源，不会 CORS）----
+const MPA_GEOJSON_URL = "/data/mpa.geojson";
+
 // ---- DOM ----
 const q = document.getElementById("q");
 const sugg = document.getElementById("suggest");
@@ -27,6 +31,81 @@ function setMarker(lat, lon, label) {
   marker.bindPopup(label).openPopup();
   map.setView([lat, lon], 8);
 }
+
+// ===================== 保护区提醒（仅前端） =====================
+// 需要 turf.js（在 HTML 里用 <script> 引入）
+// 若页面没有放，我这里会降级为不启用保护区判断。
+let mpaGeoJson = null;
+let mpaLayer = null;
+
+// 创建提醒条（若页面里没有，则动态插入）
+function ensureMpaBanner() {
+  let el = document.getElementById('mpa-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'mpa-banner';
+    el.style.cssText = 'display:none;margin:8px 0;padding:10px 12px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:600;';
+    // 放在概要卡片上方（如果没有就放在页面顶部容器某处）
+    const summary = document.getElementById('summaryBody');
+    if (summary && summary.parentElement) {
+      summary.parentElement.parentElement.insertAdjacentElement('beforebegin', el);
+    } else {
+      document.body.prepend(el);
+    }
+  }
+  return el;
+}
+function showMpaBanner(text) {
+  const el = ensureMpaBanner();
+  el.textContent = text;
+  el.style.display = 'block';
+}
+function hideMpaBanner() {
+  const el = ensureMpaBanner();
+  el.style.display = 'none';
+}
+
+// 加载并在地图上叠加保护区边界
+async function loadMpaLayer(mapInstance) {
+  try {
+    const res = await fetch(MPA_GEOJSON_URL, { cache: 'no-store' });
+    if (!res.ok) return;
+    mpaGeoJson = await res.json();
+
+    // 叠加到 Leaflet（淡绿色边界）
+    mpaLayer = L.geoJSON(mpaGeoJson, {
+      style: { color: '#10b981', weight: 1, fillOpacity: 0.08 }
+    }).addTo(mapInstance);
+  } catch (e) {
+    console.warn('MPA geojson 加载失败：', e);
+  }
+}
+
+// 判断某点是否在保护区多边形内
+function checkMpaHit(lat, lon) {
+  if (!mpaGeoJson) return { hit: false, names: [] };
+  if (typeof turf === 'undefined' || !turf || !turf.booleanPointInPolygon) {
+    console.warn('未检测到 turf.js，保护区判断已跳过。');
+    return { hit: false, names: [] };
+  }
+  const pt = turf.point([lon, lat]); // turf 使用 [lon, lat]
+  const names = [];
+
+  const feats = mpaGeoJson.features || [];
+  for (const f of feats) {
+    try {
+      if (turf.booleanPointInPolygon(pt, f)) {
+        const props = f.properties || {};
+        names.push(props.name || props.NAME || 'Protected Area');
+      }
+    } catch { /* 忽略坏几何 */ }
+  }
+  return { hit: names.length > 0, names };
+}
+
+// 初始化时尝试加载保护区图层（若文件不存在也不报错）
+loadMpaLayer(map);
+// ============================================================
 
 // ---- 搜索输入监听（已加防抖与容错）----
 let typingTimer;
@@ -106,6 +185,16 @@ btn.addEventListener("click", async () => {
     renderSummary(sel, data);
     renderDaily(data);
     renderHourly(data);
+
+    // === 仅添加：保护区提醒 ===
+    const res = checkMpaHit(sel.lat, sel.lon);
+    if (res.hit) {
+      showMpaBanner(`⚠ 当前点位位于海洋保护/禁渔区：${res.names.join('、')}。请遵守当地规定。`);
+    } else {
+      hideMpaBanner();
+    }
+    // =========================
+
   } catch (e) {
     console.error("conditions error:", e);
     alert("网络错误，请检查后端是否已部署。");

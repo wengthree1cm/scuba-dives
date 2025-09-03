@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .db import Base, engine
 from .routers import dive_logs
 from routes_conditions import router as conditions_router
+from .routes_mpa import router as mpa_router
 app = FastAPI(title="Scuba Diving Log API")
 from starlette.staticfiles import StaticFiles
 # 本地前端调试更方便
@@ -23,7 +24,7 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 app.include_router(dive_logs.router)
 app.include_router(conditions_router)
-
+app.include_router(mpa_router)
 
 
 @app.get("/")
