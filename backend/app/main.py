@@ -22,10 +22,10 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 app.include_router(dive_logs.router)
 app.include_router(conditions_router)
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 
 
 @app.get("/")
 def root():
     return {"ok": True, "service": "scuba-api"}
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
