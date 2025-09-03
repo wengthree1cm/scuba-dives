@@ -88,7 +88,7 @@ async def conditions(
             "wind_wave_height",
             "wind_wave_direction",
             "wind_wave_period",
-            "water_temperature"
+            "sea_surface_temperature"
         ]),
         "timezone": timezone,
         "start_date": start.isoformat(),
