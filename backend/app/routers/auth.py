@@ -1,3 +1,5 @@
+# app/routers/auth.py
+import os
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
@@ -17,6 +19,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 COOKIE_ACCESS = "access_token"
 COOKIE_REFRESH = "refresh_token"
 
+# 线上（HTTPS）应为 True；本地 http 调试可设环境变量 COOKIE_SECURE=false
+SECURE_COOKIES = os.getenv("COOKIE_SECURE", "true").lower() == "true"
+
 class RegisterIn(BaseModel):
     email: EmailStr
     password: str
@@ -31,14 +36,40 @@ class UserOut(BaseModel):
     class Config:
         from_attributes = True  # Pydantic v2
 
-def set_auth_cookies(resp: Response, access: str, refresh: str, secure: bool = True):
-    # 跨站前端（scuba-dives-page.*）访问后端（scuba-dives.*）——必须 SameSite=None
-    resp.set_cookie("access_token", access, httponly=True, samesite="none", secure=secure)
-    resp.set_cookie("refresh_token", refresh, httponly=True, samesite="none", secure=secure)
 
-def clear_auth_cookies(resp: Response):
-    resp.delete_cookie(COOKIE_ACCESS)
-    resp.delete_cookie(COOKIE_REFRESH)
+def set_auth_cookies(resp: Response, access: str, refresh: str, secure: bool | None = None) -> None:
+    """
+    跨域前后端（不同顶级域名）下，Cookie 必须 SameSite=None 且 Secure 才能随 XHR 携带。
+    """
+    if secure is None:
+        secure = SECURE_COOKIES
+    resp.set_cookie(
+        COOKIE_ACCESS, access,
+        httponly=True, samesite="none", secure=secure, path="/",
+    )
+    resp.set_cookie(
+        COOKIE_REFRESH, refresh,
+        httponly=True, samesite="none", secure=secure, path="/",
+    )
+
+
+def clear_auth_cookies(resp: Response, secure: bool | None = None) -> None:
+    """
+    某些浏览器在第三方上下文中会忽略没有 SameSite=None 的删除，因此这里显式覆盖为过期值。
+    """
+    if secure is None:
+        secure = SECURE_COOKIES
+
+    # 显式覆盖为过期（比 delete_cookie 更稳，确保带上 SameSite=None）
+    resp.set_cookie(
+        COOKIE_ACCESS, "",
+        max_age=0, expires=0, httponly=True, samesite="none", secure=secure, path="/",
+    )
+    resp.set_cookie(
+        COOKIE_REFRESH, "",
+        max_age=0, expires=0, httponly=True, samesite="none", secure=secure, path="/",
+    )
+
 
 @router.post("/register", response_model=UserOut)
 def register(data: RegisterIn, db: Session = Depends(get_db)):
@@ -51,6 +82,7 @@ def register(data: RegisterIn, db: Session = Depends(get_db)):
     db.refresh(user)
     return user
 
+
 @router.post("/login", response_model=UserOut)
 def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
@@ -58,8 +90,9 @@ def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     access = create_access_token(user.id)
     refresh = create_refresh_token(user.id)
-    set_auth_cookies(response, access, refresh, secure=True)
+    set_auth_cookies(response, access, refresh)  # 根据 SECURE_COOKIES 自动选择 secure
     return UserOut.model_validate(user)
+
 
 @router.post("/refresh", response_model=UserOut)
 def refresh_token(request: Request, response: Response, db: Session = Depends(get_db)):
@@ -72,13 +105,15 @@ def refresh_token(request: Request, response: Response, db: Session = Depends(ge
         raise HTTPException(status_code=401, detail="User not found")
     access = create_access_token(user.id)
     new_refresh = create_refresh_token(user.id)
-    set_auth_cookies(response, access, new_refresh, secure=True)
+    set_auth_cookies(response, access, new_refresh)
     return UserOut.model_validate(user)
 
-@router.post("/logout")
+
+@router.post("/logout", status_code=204)
 def logout(response: Response):
     clear_auth_cookies(response)
-    return {"ok": True}
+    return  # 204 No Content
+
 
 @router.get("/me", response_model=UserOut)
 def me(request: Request, db: Session = Depends(get_db)):

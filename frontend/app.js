@@ -150,3 +150,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   loadList();
 });
+
+async function logout(e) {
+  if (e) e.preventDefault();
+  await fetch(API_BASE + "/auth/logout", { method: "POST", credentials: "include" });
+  // 强制去登录页；到达 auth.html 后 /auth/me 会返回 401
+  location.replace("./auth.html");
+}
+
+document.getElementById("btn-logout")?.addEventListener("click", logout);
