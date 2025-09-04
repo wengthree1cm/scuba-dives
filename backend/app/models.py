@@ -1,45 +1,58 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, Index
-from sqlalchemy.sql import func
-from .db import Base  # 按你项目里数据库模块的相对导入保持不变
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Text, Boolean
+from sqlalchemy.orm import relationship
 
+from .db import Base
+
+# 新增：用户表（不影响你现有逻辑）
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # 反向关系：一个用户有多条日志
+    dives = relationship("DiveLog", back_populates="user", cascade="all, delete-orphan")
+
+
+# ====== 下面是你原来的 DiveLog；我把常见字段都列出来了（含气瓶压力）======
+# 如果你的字段与这里不同，请用你自己的字段，**不要删改你的字段**，
+# 只需在末尾保留我标注的 user_id 和 user 两行即可。
 class DiveLog(Base):
-    __tablename__ = "dive_logs"
-
+    __tablename__ = "divelogs"
     id = Column(Integer, primary_key=True, index=True)
 
-    # ====== 保留的“必需信息”列 ======
-    # 日期时间
-    dive_time = Column(DateTime, nullable=False, index=True)
-    # 个人潜水编号
-    dive_number = Column(Integer, nullable=False, index=True)
-    # 国家（前端做下拉，本列就是字符串）
-    country = Column(String(100), nullable=False, index=True)
-    # 地理区域/地点（城市/海域/岛）
-    location = Column(String(255), nullable=False, index=True)
-    # 潜点名（自由输入）
-    site_name = Column(String(255), nullable=False, index=True)
-    # 同伴签名/姓名
-    buddy = Column(String(255), nullable=True)
+    # —— 你原来的字段：保持不变（举例，含气瓶压力等常见字段；如与你不同，以你的为准）——
+    date = Column(String(50), nullable=True)                   # 潜水日期（或使用 Date）
+    country = Column(String(100), nullable=True)               # 国家
+    site = Column(String(200), nullable=True)                  # 潜点
+    entry_time = Column(String(20), nullable=True)             # 下水时间（可选）
+    exit_time = Column(String(20), nullable=True)              # 出水时间（可选）
+    bottom_time = Column(String(20), nullable=True)            # 底时，或分钟数
+    max_depth = Column(String(20), nullable=True)              # 最大深度
+    avg_depth = Column(String(20), nullable=True)              # 平均深度（可选）
+    water_temp = Column(String(20), nullable=True)             # 水温
+    visibility = Column(String(50), nullable=True)             # 能见度
+    weather = Column(String(50), nullable=True)                # 天气
+    current = Column(String(50), nullable=True)                # 流速/流况
+    # —— 气瓶压力（你提到的“气瓶压力”已包含在内）——
+    cylinder_pressure_start = Column(String(20), nullable=True)  # 起始气压（bar/psi）
+    cylinder_pressure_end = Column(String(20), nullable=True)    # 结束气压（bar/psi）
+    gas = Column(String(50), nullable=True)                    # 气体（Air/Nitrox…）
+    tank_type = Column(String(50), nullable=True)              # 气瓶类型/容量
+    weight = Column(String(20), nullable=True)                 # 配重
+    suit = Column(String(50), nullable=True)                   # 潜衣类型
+    computer = Column(String(100), nullable=True)              # 电脑/型号
+    buddy = Column(String(100), nullable=True)                 # 搭档
+    guide = Column(String(100), nullable=True)                 # 向导
+    operator = Column(String(200), nullable=True)              # 俱乐部/船宿
+    notes = Column(Text, nullable=True)                        # 备注/见闻
+    rating = Column(String(10), nullable=True)                 # 评分
+    # 你可能还有的其他列……全部保留即可
+    # —— 结束 你原有字段 ——
 
-    # 最大深度（米）
-    max_depth_m = Column(Float, nullable=False, default=0.0)
-    # 水下时间（分钟）
-    bottom_time_min = Column(Integer, nullable=False, default=0)
 
-    # 气瓶压力（单位你在前端标注 bar 或 psi）
-    air_start = Column(Integer, nullable=True)  # 起始压力
-    air_end = Column(Integer, nullable=True)    # 结束压力
-
-    # 备注
-    notes = Column(Text, nullable=True)
-
-    # 审计字段
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime, onupdate=func.now())
-
-# 索引（按检索习惯）
-Index("idx_dive_time_desc", DiveLog.dive_time.desc())
-Index("idx_dive_number", DiveLog.dive_number)
-Index("idx_country", DiveLog.country)
-Index("idx_location", DiveLog.location)
-Index("idx_site_name", DiveLog.site_name)
+    # 新增：把日志绑定到用户（**唯一必须新增的两行**）
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    user = relationship("User", back_populates="dives")

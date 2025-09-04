@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <title>登录 / 注册 - Scuba Dives</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./auth.css">
+</head>
+<body>
+  <div class="auth-card">
+    <h1>Scuba Dives</h1>
+
+    <div class="tabs">
+      <button id="tab-login" class="active">登录</button>
+      <button id="tab-register">注册</button>
+    </div>
+
+    <form id="login-form" class="form active">
+      <label>邮箱</label>
+      <input id="login-email" type="email" required placeholder="you@example.com">
+      <label>密码</label>
+      <input id="login-password" type="password" required placeholder="••••••••">
+      <button type="submit">登录</button>
+      <p class="msg" id="login-msg"></p>
+    </form>
+
+    <form id="register-form" class="form">
+      <label>邮箱</label>
+      <input id="register-email" type="email" required placeholder="you@example.com">
+      <label>密码</label>
+      <input id="register-password" type="password" required placeholder="至少 6 位">
+      <button type="submit">注册</button>
+      <p class="msg" id="register-msg"></p>
+    </form>
+  </div>
+
+  <script src="./auth.js"></script>
+</body>
+</html>
