@@ -16,13 +16,13 @@ app = FastAPI(title="Scuba Diving Log API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://127.0.0.1:5500",
+        "https://scuba-dives-page.onrender.com",  # 前端域名（必须精确）
+        "https://scuba-dives.onrender.com",       # 如果你也从后端域名开前端就留着
+        "http://127.0.0.1:5500",                  # 本地静态服（可选）
         "http://localhost:5500",
-        "https://scuba-dives-page.onrender.com",
-        "https://scuba-dives.onrender.com"
     ],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=True,                       # 必须：要带 cookie
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

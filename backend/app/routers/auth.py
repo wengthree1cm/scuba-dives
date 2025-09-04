@@ -32,9 +32,9 @@ class UserOut(BaseModel):
         from_attributes = True  # Pydantic v2
 
 def set_auth_cookies(resp: Response, access: str, refresh: str, secure: bool = True):
-    # 本地 http 调试可改 secure=False；线上 https 必须 True
-    resp.set_cookie(COOKIE_ACCESS, access, httponly=True, samesite="lax", secure=secure)
-    resp.set_cookie(COOKIE_REFRESH, refresh, httponly=True, samesite="lax", secure=secure)
+    # 跨站前端（scuba-dives-page.*）访问后端（scuba-dives.*）——必须 SameSite=None
+    resp.set_cookie("access_token", access, httponly=True, samesite="none", secure=secure)
+    resp.set_cookie("refresh_token", refresh, httponly=True, samesite="none", secure=secure)
 
 def clear_auth_cookies(resp: Response):
     resp.delete_cookie(COOKIE_ACCESS)
