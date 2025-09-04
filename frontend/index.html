@@ -4,30 +4,35 @@
   <meta charset="utf-8">
   <title>我的潜点日志 - Scuba Dives</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 这里不依赖外部样式，尽量少改你现有结构 -->
   <style>
-    :root { --bg:#061723; --card:#0b2436; --text:#e6f3ff; --muted:#b6d7f2; --accent:#1e90ff; --border: rgba(255,255,255,0.08); }
-    *{box-sizing:border-box} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#072131;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
-    .brand{font-weight:700;letter-spacing:.3px}
-    .user{display:flex;gap:10px;align-items:center;color:#cfeaff}
-    .btn{padding:8px 12px;border:0;border-radius:10px;background:var(--accent);color:#001423;font-weight:700;cursor:pointer}
-    .btn.secondary{background:transparent;color:var(--text);border:1px solid var(--border)}
-    main{max-width:1050px;margin:18px auto;padding:0 16px;display:grid;grid-template-columns:1fr 1.2fr;gap:18px}
-    @media (max-width:1000px){main{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
-    h2{margin:0 0 12px;font-size:18px;color:#d8ecff}
-    .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-    label{display:block;font-size:12px;color:var(--muted);margin:6px 2px}
-    input,textarea,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);outline:none}
-    textarea{min-height:80px;resize:vertical}
-    .list .item{border:1px solid var(--border);border-radius:12px;padding:12px;margin:10px 0;background:rgba(255,255,255,.02)}
-    .item h3{margin:0 0 6px;font-size:16px}
-    .muted{color:var(--muted);font-size:13px}
-    .row-actions{display:flex;gap:10px;margin-top:8px}
-    .pill{display:inline-block;padding:3px 8px;border-radius:20px;border:1px solid var(--border);font-size:12px;color:#bfe4ff;margin-right:8px}
-    .err{color:#ffb1b1}
-    .ok{color:#a8ffcf}
+    :root {
+      --bg:#061723; --card:#0b2436; --text:#e6f3ff; --muted:#b6d7f2; --accent:#1e90ff;
+      --border: rgba(255,255,255,0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    a { color: var(--accent); text-decoration: none; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#072131; border-bottom:1px solid var(--border); position: sticky; top: 0; z-index: 10;}
+    .brand { font-weight: 700; letter-spacing:.3px; }
+    .user { display:flex; align-items:center; gap:10px; color:#cfeaff; }
+    .btn { padding:8px 12px; border:0; border-radius:10px; background:var(--accent); color:#001423; font-weight:700; cursor:pointer; }
+    .btn.secondary { background:transparent; color:var(--text); border:1px solid var(--border); }
+    main { max-width: 1050px; margin: 18px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 18px; }
+    @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+    .card { background: var(--card); border:1px solid var(--border); border-radius: 14px; padding: 16px; }
+    h2 { margin: 0 0 12px; font-size: 18px; color: #d8ecff; }
+    .row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+    .row3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+    label { display:block; font-size: 12px; color: var(--muted); margin: 6px 2px; }
+    input, textarea, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); outline: none; }
+    textarea { min-height: 80px; resize: vertical; }
+    .list .item { border:1px solid var(--border); border-radius: 12px; padding: 12px; margin: 10px 0; background: rgba(255,255,255,0.02); }
+    .item h3 { margin: 0 0 6px; font-size: 16px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .row-actions { display:flex; gap:10px; margin-top:8px; }
+    .pill { display:inline-block; padding:3px 8px; border-radius: 20px; border:1px solid var(--border); font-size:12px; color:#bfe4ff; margin-right: 8px; }
+    .split { display:flex; gap:12px; flex-wrap: wrap; }
   </style>
 </head>
 <body>
@@ -40,30 +45,14 @@
   </div>
 
   <main>
-    <!-- 左：创建记录（精简版） -->
+    <!-- 左：创建记录 -->
     <section class="card">
       <h2>新增潜水记录</h2>
       <form id="create-form">
         <div class="row">
           <div>
             <label>国家</label>
-            <select id="country">
-              <option value="">请选择</option>
-              <option>Indonesia</option>
-              <option>Philippines</option>
-              <option>Thailand</option>
-              <option>Malaysia</option>
-              <option>Maldives</option>
-              <option>Egypt</option>
-              <option>Mexico</option>
-              <option>Australia</option>
-              <option>USA</option>
-              <option>Japan</option>
-              <option>China</option>
-              <option>Taiwan</option>
-              <option>Vietnam</option>
-              <option>Sri Lanka</option>
-            </select>
+            <input id="country" placeholder="Indonesia">
           </div>
           <div>
             <label>潜点</label>
@@ -71,18 +60,22 @@
           </div>
         </div>
 
-        <div class="row" style="margin-top:8px;">
+        <div class="row3" style="margin-top:8px;">
           <div>
             <label>日期</label>
-            <input id="date" type="date">
+            <input id="date" placeholder="2025-09-03">
           </div>
           <div>
-            <label>最大深度（m）</label>
-            <input id="max_depth" type="number" inputmode="numeric" step="1" min="0" placeholder="30">
+            <label>最大深度</label>
+            <input id="max_depth" placeholder="30 m">
+          </div>
+          <div>
+            <label>平均深度（可选）</label>
+            <input id="avg_depth" placeholder="14 m">
           </div>
         </div>
 
-        <div class="row" style="margin-top:8px;">
+        <div class="row3" style="margin-top:8px;">
           <div>
             <label>下水时间（可选）</label>
             <input id="entry_time" placeholder="09:40">
@@ -91,12 +84,35 @@
             <label>出水时间（可选）</label>
             <input id="exit_time" placeholder="10:20">
           </div>
+          <div>
+            <label>底时（可选）</label>
+            <input id="bottom_time" placeholder="36 min">
+          </div>
         </div>
 
-        <div class="row" style="margin-top:8px;">
+        <div class="row3" style="margin-top:8px;">
           <div>
-            <label>水温（℃）</label>
-            <input id="water_temp" type="number" inputmode="numeric" step="1" placeholder="27">
+            <label>水温</label>
+            <input id="water_temp" placeholder="27 ℃">
+          </div>
+          <div>
+            <label>能见度</label>
+            <input id="visibility" placeholder="15 m">
+          </div>
+          <div>
+            <label>天气（可选）</label>
+            <input id="weather" placeholder="Sunny">
+          </div>
+        </div>
+
+        <div class="row3" style="margin-top:8px;">
+          <div>
+            <label>起始气压</label>
+            <input id="cylinder_pressure_start" placeholder="200 bar">
+          </div>
+          <div>
+            <label>结束气压</label>
+            <input id="cylinder_pressure_end" placeholder="50 bar">
           </div>
           <div>
             <label>气体</label>
@@ -104,23 +120,49 @@
           </div>
         </div>
 
-        <div class="row" style="margin-top:8px;">
+        <div class="row3" style="margin-top:8px;">
           <div>
-            <label>起始气压（bar）</label>
-            <input id="cylinder_pressure_start" type="number" inputmode="numeric" step="1" min="0" placeholder="200">
+            <label>气瓶类型（可选）</label>
+            <input id="tank_type" placeholder="Alu80">
           </div>
           <div>
-            <label>结束气压（bar）</label>
-            <input id="cylinder_pressure_end" type="number" inputmode="numeric" step="1" min="0" placeholder="50">
+            <label>配重（可选）</label>
+            <input id="weight" placeholder="4 kg">
+          </div>
+          <div>
+            <label>潜衣（可选）</label>
+            <input id="suit" placeholder="3mm">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label>电脑（可选）</label>
+            <input id="computer" placeholder="Perdix 2">
+          </div>
+          <div>
+            <label>伙伴（可选）</label>
+            <input id="buddy" placeholder="Tom">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label>向导（可选）</label>
+            <input id="guide" placeholder="Wayan">
+          </div>
+          <div>
+            <label>俱乐部/船宿（可选）</label>
+            <input id="operator" placeholder="ScubaX">
           </div>
         </div>
 
         <div style="margin-top:8px;">
           <label>备注</label>
-          <textarea id="notes" placeholder="今天看到了..."></textarea>
+          <textarea id="notes" placeholder="今天看到了鹰鳐和白鳍鲨..."></textarea>
         </div>
 
-        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;">
+        <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
           <button type="submit" class="btn">保存</button>
           <span id="save-msg" class="muted"></span>
         </div>
