@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <title>My dive logs - Scuba Dives</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg:#061723; --card:#0b2436; --text:#e6f3ff; --muted:#b6d7f2; --accent:#1e90ff;
+      --border: rgba(255,255,255,0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    a { color: var(--accent); text-decoration: none; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#072131; border-bottom:1px solid var(--border); position: sticky; top: 0; z-index: 10;}
+    .brand { font-weight: 700; letter-spacing:.3px; }
+    .user { display:flex; align-items:center; gap:10px; color:#cfeaff; }
+    .btn { padding:8px 12px; border:0; border-radius:10px; background:var(--accent); color:#001423; font-weight:700; cursor:pointer; }
+    .btn.secondary { background:transparent; color:var(--text); border:1px solid var(--border); }
+    main { max-width: 1050px; margin: 18px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 18px; }
+    @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+    .card { background: var(--card); border:1px solid var(--border); border-radius: 14px; padding: 16px; }
+    h2 { margin: 0 0 12px; font-size: 18px; color: #d8ecff; }
+    .row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+    .row3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+    label { display:block; font-size: 12px; color: var(--muted); margin: 6px 2px; }
+    input, textarea, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); outline: none; }
+    textarea { min-height: 80px; resize: vertical; }
+    .list .item { border:1px solid var(--border); border-radius: 12px; padding: 12px; margin: 10px 0; background: rgba(255,255,255,0.02); }
+    .item h3 { margin: 0 0 6px; font-size: 16px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .row-actions { display:flex; gap:10px; margin-top:8px; }
+    .pill { display:inline-block; padding:3px 8px; border-radius: 20px; border:1px solid var(--border); font-size:12px; color:#bfe4ff; margin-right: 8px; }
+    .split { display:flex; gap:12px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">Scuba Dives</div>
+    <div class="user">
+      <span id="user-email">Not Logged in</span>
+      <button id="btn-logout" class="btn secondary">Log Out</button>
+    </div>
+  </div>
+
+  <main>
+    <section class="card">
+      <h2>New record</h2>
+      <form id="create-form">
+        <div class="row">
+          <div>
+            <label>Country</label>
+            <input id="country" placeholder="Indonesia">
+          </div>
+          <div>
+            <label>Dive Spot</label>
+            <input id="site" placeholder="Blue Corner">
+          </div>
+        </div>
+
+        <div class="row3" style="margin-top:8px;">
+          <div>
+            <label>Date</label>
+            <input id="date" placeholder="2025-09-03">
+          </div>
+          <div>
+            <label>Max Depth</label>
+            <input id="max_depth" placeholder="30 m">
+          </div>
+          <div>
+            <label>average depth (Optional)</label>
+            <input id="avg_depth" placeholder="14 m">
+          </div>
+        </div>
+
+        <div class="row3" style="margin-top:8px;">
+          <div>
+            <label>start timee (Optional)</label>
+            <input id="entry_time" placeholder="09:40">
+          </div>
+          <div>
+            <label>end time (Optional)</label>
+            <input id="exit_time" placeholder="10:20">
+          </div>
+          <div>
+            <label>Total Time (Optional)</label>
+            <input id="bottom_time" placeholder="36 min">
+          </div>
+        </div>
+
+        <div class="row3" style="margin-top:8px;">
+          <div>
+            <label>Water Temperature</label>
+            <input id="water_temp" placeholder="27 ℃">
+          </div>
+          <div>
+            <label>Visibility</label>
+            <input id="visibility" placeholder="15 m">
+          </div>
+          <div>
+            <label>Weather (Optional)</label>
+            <input id="weather" placeholder="Sunny">
+          </div>
+        </div>
+
+        <div class="row3" style="margin-top:8px;">
+          <div>
+            <label>start tank pressure</label>
+            <input id="cylinder_pressure_start" placeholder="200 bar">
+          </div>
+          <div>
+            <label>end tank pressure</label>
+            <input id="cylinder_pressure_end" placeholder="50 bar">
+          </div>
+          <div>
+            <label>air type</label>
+            <input id="gas" placeholder="Air / EAN32">
+          </div>
+        </div>
+
+        <div class="row3" style="margin-top:8px;">
+          <div>
+            <label>tank type (Optional)</label>
+            <input id="tank_type" placeholder="Alu80">
+          </div>
+          <div>
+            <label>Weight (Optional)</label>
+            <input id="weight" placeholder="4 kg">
+          </div>
+          <div>
+            <label>Dive suites (Optioanl)</label>
+            <input id="suit" placeholder="3mm">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label>Dive Computer (Optional)</label>
+            <input id="computer" placeholder="Perdix 2">
+          </div>
+          <div>
+            <label>Dive mates (Optional)</label>
+            <input id="buddy" placeholder="Tom">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label>Dive guide (Optional)</label>
+            <input id="guide" placeholder="Wayan">
+          </div>
+          <div>
+            <label>Liveaboard (Optional)</label>
+            <input id="operator" placeholder="ScubaX">
+          </div>
+        </div>
+
+        <div style="margin-top:8px;">
+          <label>Notes</label>
+          <textarea id="notes" placeholder="今天看到了鹰鳐和白鳍鲨..."></textarea>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+          <button type="submit" class="btn">Save</button>
+          <span id="save-msg" class="muted"></span>
+        </div>
+      </form>
+    </section>
+
+    <section class="card list">
+      <h2>My Record</h2>
+      <div id="list"></div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

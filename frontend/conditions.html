@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dive spot weather and sea condition check</title>
+  <link rel="stylesheet" href="./conditions.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Dive spot weather and sea condition check</h1>
+    <a href="index.html" class="link">Back to Main</a>
+  </header>
+
+  <section class="search">
+    <div class="field">
+      <label>Search location</label>
+      <input id="q" type="text" placeholder="Enter the City name">
+      <div id="suggest" class="suggest"></div>
+    </div>
+    <div class="field">
+      <label>Start date</label>
+      <input id="date" type="date">
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <select id="days">
+        <option value="1">Only today</option>
+        <option value="3">Three days</option>
+        <option value="5">Five days</option>
+        <option value="7">Seven days</option>
+      </select>
+    </div>
+    <button id="btn">Search</button>
+  </section>
+
+  <section class="layout">
+    <div id="map"></div>
+    <div id="mpa-banner" style="display:none;margin:8px 0;padding:10px 12px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:600;"></div>
+    <div class="cards">
+      <div class="card" id="summary">
+        <h3>overview</h3>
+        <div id="summaryBody">Enter location and search</div>
+      </div>
+      <div class="card">
+        <h3>Everyday overview</h3>
+        <div id="daily"></div>
+      </div>
+      <div class="card">
+        <h3>Data by each hour</h3>
+        <div id="hourly"></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+  <script src="./conditions.js"></script>
+</body>
+</html>
