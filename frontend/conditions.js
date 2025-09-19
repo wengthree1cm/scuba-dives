@@ -65,14 +65,14 @@ async function loadMpaLayer(mapInstance) {
       style: { color: '#10b981', weight: 1, fillOpacity: 0.08 }
     }).addTo(mapInstance);
   } catch (e) {
-    console.warn('MPA geojson 加载失败：', e);
+    console.warn('MPA geojson load failed：', e);
   }
 }
 
 function checkMpaHit(lat, lon) {
   if (!mpaGeoJson) return { hit: false, names: [] };
   if (typeof turf === 'undefined' || !turf || !turf.booleanPointInPolygon) {
-    console.warn('未检测到 turf.js，保护区判断已跳过。');
+    console.warn('did not detect turf.js');
     return { hit: false, names: [] };
   }
   const pt = turf.point([lon, lat]); 
@@ -148,7 +148,7 @@ document.addEventListener("click", (e) => {
 });
 
 btn.addEventListener("click", async () => {
-  if (!sel) { alert("请先选择地点"); return; }
+  if (!sel) { alert("Please select location"); return; }
   const params = new URLSearchParams({
     lat: sel.lat,
     lon: sel.lon,
@@ -157,7 +157,7 @@ btn.addEventListener("click", async () => {
   });
   try {
     const r = await fetch(`${API_BASE}/conditions?${params.toString()}`);
-    if (!r.ok) { alert("查询失败，请稍后再试"); return; }
+    if (!r.ok) { alert("failed search, please try later"); return; }
     const data = await r.json();
     renderSummary(sel, data);
     renderDaily(data);
@@ -165,14 +165,14 @@ btn.addEventListener("click", async () => {
 
     const res = checkMpaHit(sel.lat, sel.lon);
     if (res.hit) {
-      showMpaBanner(`⚠ 当前点位位于海洋保护/禁渔区：${res.names.join('、')}。请遵守当地规定。`);
+      showMpaBanner(`⚠ current location is in protected area：${res.names.join('、')} please follow the local rules`);
     } else {
       hideMpaBanner();
     }
 
   } catch (e) {
     console.error("conditions error:", e);
-    alert("网络错误，请检查后端是否已部署。");
+    alert("network error, check if deployed");
   }
 });
 
@@ -180,14 +180,14 @@ function renderSummary(place, data) {
   const cur = data.current_hint || {};
   const html = `
     <div><b>${place.name || ""}</b> ${place.admin1 || ""} ${place.country || ""}</div>
-    <div>日期范围：${data.range.start} 至 ${data.range.end}</div>
+    <div>Date range：${data.range.start} to ${data.range.end}</div>
     <div style="margin-top:8px; display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px;">
-      <div>气温：${fmt(cur.temp_c, "°C")}</div>
-      <div>风速：${fmt(cur.wind_speed, "m s⁻¹")}</div>
-      <div>风向：${fmt(cur.wind_dir, "°")}</div>
-      <div>能见度：${fmt(cur.visibility, "m")}</div>
-      <div>浪高：${fmt(cur.wave_height, "m")}</div>
-      <div>海温：${fmt(cur.water_temp, "°C")}</div>
+      <div>Air temperature：${fmt(cur.temp_c, "°C")}</div>
+      <div>Air speed：${fmt(cur.wind_speed, "m s⁻¹")}</div>
+      <div>Air direction：${fmt(cur.wind_dir, "°")}</div>
+      <div>Visibility：${fmt(cur.visibility, "m")}</div>
+      <div>Wave height：${fmt(cur.wave_height, "m")}</div>
+      <div>Water temperature：${fmt(cur.water_temp, "°C")}</div>
     </div>
   `;
   document.getElementById("summaryBody").innerHTML = html;
@@ -209,7 +209,7 @@ function renderDaily(data) {
     <div class="table">
       <table>
         <thead><tr>
-          <th>日期</th><th>紫外线</th><th>日降水</th><th>最大风速</th><th>最大阵风</th><th>日出日落</th>
+          <th>Date</th><th>UV rays</th><th>daily precipitation</th><th>Max air speed</th><th>Maximum Wind Gust</th><th>Sunrise & Sunset</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -236,13 +236,13 @@ function renderHourly(data) {
     <div class="table">
       <table>
         <thead><tr>
-          <th>时间</th><th>气温</th><th>风速</th><th>降水</th><th>云量</th><th>能见度</th>
-          <th>浪高</th><th>周期</th><th>海温</th>
+          <th>Time</th><th>Air temperature</th><th>Air speed</th><th>Precipitation</th><th>Cloud</th><th>Visibility</th>
+          <th>Wave Height</th><th>cycle</th><th>Water temperature</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
 }
 
-function fmt(x, unit) { return (x === null || x === undefined) ? "无" : `${x} ${unit}`; }
+function fmt(x, unit) { return (x === null || x === undefined) ? "None" : `${x} ${unit}`; }
 function fv(arr, i) { return (arr && arr[i] !== undefined && arr[i] !== null) ? arr[i] : "—"; }

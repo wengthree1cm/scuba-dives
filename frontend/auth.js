@@ -41,7 +41,7 @@ registerForm.addEventListener("submit", async (e) => {
   const email = document.getElementById("register-email").value.trim();
   const password = document.getElementById("register-password").value.trim();
   if (!email || !password) {
-    registerMsg.textContent = "请输入邮箱与密码";
+    registerMsg.textContent = "Please enter email and password";
     registerMsg.classList.add("err");
     return;
   }
@@ -54,14 +54,14 @@ registerForm.addEventListener("submit", async (e) => {
     });
     const data = await res.json();
     if (!res.ok) {
-      registerMsg.textContent = data?.detail || "注册失败";
+      registerMsg.textContent = data?.detail || "Registration failed";
       registerMsg.classList.add("err");
       return;
     }
-    registerMsg.textContent = "注册成功，请切换到登录";
+    registerMsg.textContent = "Registration successful, please switch to login";
     registerMsg.classList.add("ok");
   } catch (err) {
-    registerMsg.textContent = "网络错误";
+    registerMsg.textContent = "Network error";
     registerMsg.classList.add("err");
   }
 });
@@ -73,7 +73,7 @@ loginForm.addEventListener("submit", async (e) => {
   const email = document.getElementById("login-email").value.trim();
   const password = document.getElementById("login-password").value.trim();
   if (!email || !password) {
-    loginMsg.textContent = "请输入邮箱与密码";
+    loginMsg.textContent = "Please enter email and password";
     loginMsg.classList.add("err");
     return;
   }
@@ -86,13 +86,13 @@ loginForm.addEventListener("submit", async (e) => {
     });
     const data = await res.json();
     if (!res.ok) {
-      loginMsg.textContent = data?.detail || "登录失败";
+      loginMsg.textContent = data?.detail || "Login failed";
       loginMsg.classList.add("err");
       return;
     }
     window.location.href = "./index.html";
   } catch (err) {
-    loginMsg.textContent = "网络错误";
+    loginMsg.textContent = "Network error";
     loginMsg.classList.add("err");
   }
 });
