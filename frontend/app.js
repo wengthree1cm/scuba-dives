@@ -38,23 +38,23 @@ function renderList(rows) {
   const box = document.getElementById("list");
   if (!box) return;
   if (!rows || rows.length === 0) {
-    box.innerHTML = "<p class='muted'>暂无记录</p>";
+    box.innerHTML = "<p class='muted'>No Records</p>";
     return;
   }
   box.innerHTML = rows.map(r => `
     <div class="item">
       <h3>${r.site || "-"} <span class="muted">（${r.country || "-"}）</span></h3>
-      <div class="muted">${r.date || "-"} · 最大深度 ${r.max_depth || "-"} · 可见度 ${r.visibility || "-"}</div>
+      <div class="muted">${r.date || "-"} · Max Depth ${r.max_depth || "-"} · Visibility ${r.visibility || "-"}</div>
       <div class="split" style="margin-top:6px;">
-        ${r.cylinder_pressure_start ? `<span class="pill">气压 ${r.cylinder_pressure_start} → ${r.cylinder_pressure_end || "-"}</span>` : ""}
-        ${r.water_temp ? `<span class="pill">水温 ${r.water_temp}</span>` : ""}
-        ${r.gas ? `<span class="pill">气体 ${r.gas}</span>` : ""}
-        ${r.tank_type ? `<span class="pill">气瓶 ${r.tank_type}</span>` : ""}
-        ${r.weight ? `<span class="pill">配重 ${r.weight}</span>` : ""}
+        ${r.cylinder_pressure_start ? `<span class="pill">Tank pressure ${r.cylinder_pressure_start} → ${r.cylinder_pressure_end || "-"}</span>` : ""}
+        ${r.water_temp ? `<span class="pill">Water temperature ${r.water_temp}</span>` : ""}
+        ${r.gas ? `<span class="pill">Air type ${r.gas}</span>` : ""}
+        ${r.tank_type ? `<span class="pill">Tank type ${r.tank_type}</span>` : ""}
+        ${r.weight ? `<span class="pill">Weight ${r.weight}</span>` : ""}
       </div>
       ${r.notes ? `<div style="margin-top:6px;">${r.notes}</div>` : ""}
       <div class="row-actions">
-        <button data-del="${r.id}" class="btn secondary">删除</button>
+        <button data-del="${r.id}" class="btn secondary">Delete</button>
       </div>
     </div>
   `).join("");
@@ -118,13 +118,13 @@ async function onCreate(e) {
 
   if (res.ok) {
     (document.getElementById("create-form") || {}).reset?.();
-    if (saveMsg) { saveMsg.textContent = "已保存"; }
+    if (saveMsg) { saveMsg.textContent = "Saved"; }
     loadList();
   } else if (res.status === 401) {
     window.location.href = "./auth.html";
   } else {
     const err = await res.json().catch(() => ({}));
-    if (saveMsg) { saveMsg.textContent = err?.detail || "保存失败"; }
+    if (saveMsg) { saveMsg.textContent = err?.detail || "Save failed"; }
   }
 }
 
